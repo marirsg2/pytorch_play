@@ -1,2 +1,4 @@
 
 *.xml
+
+venv/bin/
