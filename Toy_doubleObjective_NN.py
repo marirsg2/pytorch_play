@@ -17,13 +17,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 from random import shuffle
 
 #synthetic dataset
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
+num_epochs = 5
 number_size = 10000
 input_vector_size = int(math.ceil(math.log(number_size,2)))
+use_cuda = False
 # print(input_vector_size)
 
 data_set = []
@@ -36,7 +39,7 @@ for i in range(number_size):
 
 
 shuffle(data_set)
-data_set = torch.tensor(data_set)
+data_set = torch.tensor(data_set, dtype = torch.long)
 
 class AE_noSecond(nn.Module):
     def __init__(self):
@@ -65,6 +68,29 @@ class AE_noSecond(nn.Module):
         curr_output = F.relu(self.fc4(curr_output))
         return curr_output
     # -------------------------------
+
+device = torch.device("cuda" if use_cuda else "cpu")
+
+ae_nn = AE_noSecond()
+ae_nn.to(device)
+optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01, momentum = 0.5)
+ae_nn.train()
+for i in range(num_epochs):
+    print("At epoch =", i)
+    for d in range(data_set.shape[0]):
+        input,target = data_set[d:d+1,:] , data_set[d:d+1,:]
+        input,target = input.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = ae_nn(input)
+        loss = F.cross_entropy(output,input)
+        loss.backward()
+        optimizer.step()
+        if d%200 == 0:
+            print("at d =",d)
+    #end inner for
+#end outer for
+
+
 
 
 
