@@ -57,7 +57,7 @@ class AE_noSecond(nn.Module):
         curr_output = F.relu(self.fc1(input))
         curr_output = F.relu(self.fc2(curr_output))
         curr_output = F.relu(self.fc3(curr_output))
-        curr_output = F.relu(self.fc4(curr_output))
+        curr_output = F.sigmoid(self.fc4(curr_output))
         return curr_output
     #-------------------------------
     def get_encoding(self,input):
@@ -67,7 +67,7 @@ class AE_noSecond(nn.Module):
     # -------------------------------
     def get_decoding(self,input):
         curr_output = F.relu(self.fc3(input))
-        curr_output = F.relu(self.fc4(curr_output))
+        curr_output = F.sigmoid(self.fc4(curr_output))
         return curr_output
     # -------------------------------
 
