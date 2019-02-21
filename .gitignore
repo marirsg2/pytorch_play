@@ -2,3 +2,9 @@
 *.xml
 
 venv/bin/
+
+*.meta
+
+data/cifar-10-batches-py/
+
+*.gz

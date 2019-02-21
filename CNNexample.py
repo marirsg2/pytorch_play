@@ -108,7 +108,8 @@ def main():
     model = Net().to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
-    for epoch in range(1, args.epochs + 1):
+    # for epoch in range(1, args.epochs + 1):
+    for epoch in range(1,2):# args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
 

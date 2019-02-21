@@ -28,18 +28,20 @@ number_size = 10000
 input_vector_size = int(math.ceil(math.log(number_size,2)))
 use_cuda = False
 # print(input_vector_size)
+criterion = nn.BCELoss()
 
 data_set = []
 for i in range(number_size):
     bin_value_str = bin(i)
     bin_value_array = [int(x) for x in bin_value_str[2:]]
     #add necessary preceeding zeros to fix the input size
-    bin_value_array = [0]*(input_vector_size-len(bin_value_array)) + bin_value_array
+    bin_value_array = [0.0]*(input_vector_size-len(bin_value_array)) + bin_value_array
     data_set.append(bin_value_array)
 
 
 shuffle(data_set)
-data_set = torch.tensor(data_set, dtype = torch.long)
+target_set = torch.tensor(data_set, dtype = torch.float)
+data_set = torch.tensor(data_set, dtype = torch.float)
 
 class AE_noSecond(nn.Module):
     def __init__(self):
@@ -78,11 +80,11 @@ ae_nn.train()
 for i in range(num_epochs):
     print("At epoch =", i)
     for d in range(data_set.shape[0]):
-        input,target = data_set[d:d+1,:] , data_set[d:d+1,:]
-        input,target = input.to(device), target.to(device)
+        input,target = data_set[d:d+1,:],target_set[d:d+1,:]
+        input,target = input.to(device),target.to(device)
         optimizer.zero_grad()
         output = ae_nn(input)
-        loss = F.cross_entropy(output,input)
+        loss = criterion(output,target)
         loss.backward()
         optimizer.step()
         if d%200 == 0:
