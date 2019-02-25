@@ -23,7 +23,7 @@ from random import shuffle
 #synthetic dataset
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
-num_epochs = 5
+num_epochs = 100
 number_size = 1000
 DISPLAY_METRIC_INTERVAL = number_size/10
 BATCH_SIZE = 10
@@ -72,20 +72,36 @@ class AE_noSecond(nn.Module):
         self.fc6 = nn.Linear(int(embedding_vector_size * 2), int(number_size/2))
         self.fc7 = nn.Linear(int(number_size/2), number_size)
 
-    # -------------------------------
+        # ---------
+
     def forward(self, input):
-        curr_output = F.relu(self.fc1(input))
-        curr_output = F.relu(self.fc2(curr_output))
+        curr_output = torch.sigmoid(self.fc1(input))
+        curr_output = torch.sigmoid(self.fc2(curr_output))
         # curr_output = F.relu(self.fc3(curr_output))
-        curr_output = F.relu(self.fc4(curr_output))
-        curr_output = F.relu(self.fc5(curr_output))
-        curr_output = F.relu(self.fc6(curr_output))
-        #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
+        curr_output = torch.sigmoid(self.fc4(curr_output))
+        curr_output = torch.sigmoid(self.fc5(curr_output))
+        curr_output = torch.sigmoid(self.fc6(curr_output))
         curr_output = self.fc7(curr_output)
-        #else
+        # else
         # curr_output = F.softmax(self.fc7(curr_output))
         # curr_output = F.sigmoid(self.fc7(curr_output))
         return curr_output
+
+
+    # # -------------------------------
+    # def forward(self, input):
+    #     curr_output = F.relu(self.fc1(input))
+    #     curr_output = F.relu(self.fc2(curr_output))
+    #     # curr_output = F.relu(self.fc3(curr_output))
+    #     curr_output = F.relu(self.fc4(curr_output))
+    #     curr_output = F.relu(self.fc5(curr_output))
+    #     curr_output = F.relu(self.fc6(curr_output))
+    #     #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
+    #     curr_output = self.fc7(curr_output)
+    #     #else
+    #     # curr_output = F.softmax(self.fc7(curr_output))
+    #     # curr_output = F.sigmoid(self.fc7(curr_output))
+    #     return curr_output
     #-------------------------------
     # def get_encoding(self,input):
     #     curr_output = F.relu(self.fc1(input))
