@@ -23,16 +23,18 @@ from random import shuffle
 #synthetic dataset
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
-num_epochs = 100
+num_epochs = 5
 number_size = 1000
 DISPLAY_METRIC_INTERVAL = number_size/10
-BATCH_SIZE = 1000
+BATCH_SIZE = 10
+MODEL_PATH = "ae_nn.p"
 
 embedding_vector_size = int(math.ceil(math.log(number_size, 2)))
 use_cuda = False
 # print(input_vector_size)
 # criterion = nn.BCEWithLogitsLoss()
-criterion = nn.BCELoss()
+# criterion = nn.BCELoss()
+criterion = nn.NLLLoss()
 # criterion = nn.CrossEntropyLoss()
 
 # data_set = []
@@ -44,13 +46,15 @@ criterion = nn.BCELoss()
 #     data_set.append(bin_value_array)
 
 data_set = []
+target_set = []
 for i in range(number_size):
     one_hot_array = [0.0] * number_size
     one_hot_array[i] = 1.0
     data_set.append(one_hot_array)
+    target_set.append(i)
 
 shuffle(data_set)
-target_set = torch.tensor(data_set, dtype = torch.float)
+target_set = torch.tensor(target_set, dtype = torch.long)
 # NEED TO PUT INDICES in the target set if using cross entropy loss
 
 data_set = torch.tensor(data_set, dtype = torch.float)
@@ -78,7 +82,8 @@ class AE_noSecond(nn.Module):
         #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
         # curr_output = self.fc7(curr_output)
         #else
-        curr_output = F.sigmoid(self.fc7(curr_output))
+        curr_output = F.softmax(self.fc7(curr_output))
+        # curr_output = F.sigmoid(self.fc7(curr_output))
         return curr_output
     #-------------------------------
     # def get_encoding(self,input):
@@ -98,25 +103,36 @@ class AE_noSecond(nn.Module):
 device = torch.device("cuda" if use_cuda else "cpu")
 
 ae_nn = AE_noSecond()
+
+try:
+    print("Model was loaded")
+    # pass
+    ae_nn.load_state_dict(torch.load(MODEL_PATH))
+except:
+    print("Model was not loaded")
+    pass
+
+
 ae_nn.to(device)
-optimizer = optim.SGD(ae_nn.parameters(), lr = 0.001)
+optimizer = optim.Adam(ae_nn.parameters(), lr = 0.0)#, momentum= 0.5)
+
 ae_nn.train()
 for i in range(num_epochs):
     print("At epoch =", i)
     cumul_loss = 0.0
     for d in range(data_set.shape[0]):
-        input,target = data_set[d:d+1,:],target_set[d:d+1,:]
+        input,target = data_set[d:d+1,:],target_set[d:d+1]
         input,target = input.to(device),target.to(device)
         output = ae_nn(input)
         loss = criterion(output,target)
         cumul_loss += loss.data
         loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
+        # optimizer.step()
+        # optimizer.zero_grad()
 
-        # if d%BATCH_SIZE == 0:
-        #     optimizer.step()
-        #     optimizer.zero_grad()
+        if d%BATCH_SIZE == 0:
+            optimizer.step()
+            optimizer.zero_grad()
         if d%DISPLAY_METRIC_INTERVAL == 0:
             print("at d =",d)
             print("avg loss %f",cumul_loss/200)
@@ -126,6 +142,6 @@ for i in range(num_epochs):
 
 
 
-
+torch.save(ae_nn.state_dict(),MODEL_PATH)
 
 
