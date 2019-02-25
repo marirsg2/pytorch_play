@@ -29,13 +29,14 @@ DISPLAY_METRIC_INTERVAL = number_size/10
 BATCH_SIZE = 10
 MODEL_PATH = "ae_nn.p"
 
-embedding_vector_size = int(math.ceil(math.log(number_size, 2)))
+embedding_vector_size = 20# int(math.ceil(math.log(number_size, 2)))
 use_cuda = False
 # print(input_vector_size)
 # criterion = nn.BCEWithLogitsLoss()
 # criterion = nn.BCELoss()
-criterion = nn.NLLLoss()
-# criterion = nn.CrossEntropyLoss()
+# criterion = nn.NLLLoss()
+
+criterion = nn.CrossEntropyLoss()
 
 # data_set = []
 # for i in range(number_size):
@@ -80,9 +81,9 @@ class AE_noSecond(nn.Module):
         curr_output = F.relu(self.fc5(curr_output))
         curr_output = F.relu(self.fc6(curr_output))
         #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
-        # curr_output = self.fc7(curr_output)
+        curr_output = self.fc7(curr_output)
         #else
-        curr_output = F.softmax(self.fc7(curr_output))
+        # curr_output = F.softmax(self.fc7(curr_output))
         # curr_output = F.sigmoid(self.fc7(curr_output))
         return curr_output
     #-------------------------------
@@ -114,7 +115,7 @@ except:
 
 
 ae_nn.to(device)
-optimizer = optim.Adam(ae_nn.parameters(), lr = 0.0)#, momentum= 0.5)
+optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01)#, momentum= 0.5)
 
 ae_nn.train()
 for i in range(num_epochs):
@@ -127,12 +128,12 @@ for i in range(num_epochs):
         loss = criterion(output,target)
         cumul_loss += loss.data
         loss.backward()
-        # optimizer.step()
-        # optimizer.zero_grad()
+        optimizer.step()
+        optimizer.zero_grad()
 
-        if d%BATCH_SIZE == 0:
-            optimizer.step()
-            optimizer.zero_grad()
+        # if d%BATCH_SIZE == 0:
+        #     optimizer.step()
+        #     optimizer.zero_grad()
         if d%DISPLAY_METRIC_INTERVAL == 0:
             print("at d =",d)
             print("avg loss %f",cumul_loss/200)
