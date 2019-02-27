@@ -124,9 +124,9 @@ class AE_noSecond(nn.Module):
         curr_output = F.relu(self.fc5(curr_output))
         curr_output = F.relu(self.fc6(curr_output))
         #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
-        curr_output = self.fc7(curr_output)
+        # curr_output = self.fc7(curr_output)
         #else
-        # curr_output = F.softmax(self.fc7(curr_output))
+        curr_output = F.softmax(self.fc7(curr_output))
         # curr_output = F.sigmoid(self.fc7(curr_output))
         return curr_output
 
@@ -159,7 +159,7 @@ except:
 
 
 ae_nn.to(device)
-optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01)#, momentum= 0.5)
+optimizer = optim.SGD(ae_nn.parameters(), lr = 0.1, momentum= 0.5)
 
 ae_nn.train()
 for i in range(num_epochs):
