@@ -23,13 +23,14 @@ from random import shuffle
 #synthetic dataset
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
-num_epochs = 100
-number_size = 1000
-DISPLAY_METRIC_INTERVAL = number_size/10
-BATCH_SIZE = 10
+num_epochs = 3
+number_size = 16
+copies_per_num = 1000
+DISPLAY_METRIC_INTERVAL = 100
+BATCH_SIZE = number_size
 MODEL_PATH = "ae_nn.p"
 
-embedding_vector_size = 20# int(math.ceil(math.log(number_size, 2)))
+embedding_vector_size = int(math.ceil(math.log(number_size, 2)))
 use_cuda = False
 # print(input_vector_size)
 # criterion = nn.BCEWithLogitsLoss()
@@ -48,25 +49,50 @@ criterion = nn.CrossEntropyLoss()
 
 data_set = []
 target_set = []
-for i in range(number_size):
-    one_hot_array = [0.0] * number_size
-    one_hot_array[i] = 1.0
-    data_set.append(one_hot_array)
-    target_set.append(i)
+for i in range(1,number_size+1): #+1 because we go from 1 to num not 0 to num-1
+    one_hot_array = [0] * number_size
+    one_hot_array[i-1] = 1 #-1 because the indices start at 0
+    data_set += [one_hot_array]*copies_per_num
+    target_set += [i-1]*copies_per_num #the target is the index too !!
+#end for
 
-shuffle(data_set)
+temp_data = zip(data_set,target_set)
+temp_data = list(temp_data)
+shuffle(temp_data)
+unzippd_data = zip(*temp_data)
+unzippd_data = list(unzippd_data)
+data_set = unzippd_data[0]
+target_set = unzippd_data[1]
+
 target_set = torch.tensor(target_set, dtype = torch.long)
 # NEED TO PUT INDICES in the target set if using cross entropy loss
 
 data_set = torch.tensor(data_set, dtype = torch.float)
+
+
+
+# create MANY copies of the same data, maybe even add noise, SEE OLD code
+# mimic this architecture.
+#
+#
+#
+# input_layer = Input([max_number])
+# x = Dense(int(max_number/2),activation="relu")(input_layer)
+# single_embedding = Dense(1,activation="linear")(x)
+# # single_embedding = Dense(1,activation="linear")(input_layer)
+# x = Dense(int(max_number/2),activation="hard_sigmoid")(single_embedding)
+# # x = Dense(int(max_number),activation="hard_sigmoid")(x)
+# output = Dense(max_number,activation="softmax")(x)
+# # output = Dense(max_number,activation="hard_sigmoid")(single_embedding)
+
+
 
 class AE_noSecond(nn.Module):
     def __init__(self):
         super(AE_noSecond,self).__init__()
         self.fc1 = nn.Linear(number_size, int(number_size/2))
         self.fc2 = nn.Linear(int(number_size/2), int(number_size/4))
-        # self.fc3 = nn.Linear(int(number_size/4), int(number_size/8))
-        self.fc4 = nn.Linear(int(number_size / 4), int(embedding_vector_size))
+        self.fc3 = nn.Linear(int(number_size / 4), int(embedding_vector_size))
         #decode
         self.fc5 = nn.Linear(int(embedding_vector_size), int(embedding_vector_size * 2))
         self.fc6 = nn.Linear(int(embedding_vector_size * 2), int(number_size/2))
@@ -74,41 +100,43 @@ class AE_noSecond(nn.Module):
 
         # ---------
 
+    # def forward(self, input):
+    #     curr_output = torch.sigmoid(self.fc1(input))
+    #     curr_output = torch.sigmoid(self.fc2(curr_output))
+    #     # curr_output = F.relu(self.fc3(curr_output))
+    #     curr_output = torch.sigmoid(self.fc3(curr_output))
+    #     curr_output = torch.sigmoid(self.fc5(curr_output))
+    #     curr_output = torch.sigmoid(self.fc6(curr_output))
+    #     curr_output = self.fc7(curr_output)
+    #     # else
+    #     # curr_output = F.softmax(self.fc7(curr_output))
+    #     # curr_output = F.sigmoid(self.fc7(curr_output))
+    #     return curr_output
+    #
+    #
+    # # -------------------------------
+
     def forward(self, input):
-        curr_output = torch.sigmoid(self.fc1(input))
-        curr_output = torch.sigmoid(self.fc2(curr_output))
+        curr_output = F.relu(self.fc1(input))
+        curr_output = F.relu(self.fc2(curr_output))
         # curr_output = F.relu(self.fc3(curr_output))
-        curr_output = torch.sigmoid(self.fc4(curr_output))
-        curr_output = torch.sigmoid(self.fc5(curr_output))
-        curr_output = torch.sigmoid(self.fc6(curr_output))
+        curr_output = F.relu(self.fc3(curr_output))
+        curr_output = F.relu(self.fc5(curr_output))
+        curr_output = F.relu(self.fc6(curr_output))
+        #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
         curr_output = self.fc7(curr_output)
-        # else
+        #else
         # curr_output = F.softmax(self.fc7(curr_output))
         # curr_output = F.sigmoid(self.fc7(curr_output))
         return curr_output
 
-
-    # # -------------------------------
-    # def forward(self, input):
-    #     curr_output = F.relu(self.fc1(input))
-    #     curr_output = F.relu(self.fc2(curr_output))
-    #     # curr_output = F.relu(self.fc3(curr_output))
-    #     curr_output = F.relu(self.fc4(curr_output))
-    #     curr_output = F.relu(self.fc5(curr_output))
-    #     curr_output = F.relu(self.fc6(curr_output))
-    #     #if criterion is BCE with logit loss, then no sigmoid. BUT to decode still use sigmoid
-    #     curr_output = self.fc7(curr_output)
-    #     #else
-    #     # curr_output = F.softmax(self.fc7(curr_output))
-    #     # curr_output = F.sigmoid(self.fc7(curr_output))
-    #     return curr_output
     #-------------------------------
-    # def get_encoding(self,input):
-    #     curr_output = F.relu(self.fc1(input))
-    #     curr_output = F.relu(self.fc2(curr_output))
-    # #     curr_output = F.relu(self.fc3(curr_output))
-    #     curr_output = F.relu(self.fc4(curr_output))
-    #     return curr_output
+    def get_encoding(self,input):
+        curr_output = F.relu(self.fc1(input))
+        curr_output = F.relu(self.fc2(curr_output))
+
+        return curr_output
+
     # # -------------------------------
     # def get_decoding(self,input):
     #     curr_output = F.relu(self.fc5(input))
@@ -152,7 +180,7 @@ for i in range(num_epochs):
         #     optimizer.zero_grad()
         if d%DISPLAY_METRIC_INTERVAL == 0:
             print("at d =",d)
-            print("avg loss %f",cumul_loss/200)
+            print("avg loss %f",cumul_loss/DISPLAY_METRIC_INTERVAL)
             cumul_loss = 0.0
     #end inner for
 #end outer for
@@ -160,5 +188,3 @@ for i in range(num_epochs):
 
 
 torch.save(ae_nn.state_dict(),MODEL_PATH)
-
-
