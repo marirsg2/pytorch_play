@@ -23,21 +23,24 @@ from random import shuffle
 #synthetic dataset
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
-num_epochs = 30
-number_size = 16
-copies_per_num = 100
+num_epochs = 20
+number_size = 8
+copies_per_num = 4000
 DISPLAY_METRIC_INTERVAL = 100
-BATCH_SIZE = number_size
+BATCH_SIZE = 10
 MODEL_PATH = "ae_nn.p"
 
 embedding_vector_size = int(math.ceil(math.log(number_size, 2)))
 use_cuda = False
+
 # print(input_vector_size)
 # criterion = nn.BCEWithLogitsLoss()
 # criterion = nn.BCELoss()
 # criterion = nn.NLLLoss()
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CosineEmbeddingLoss()
+
+# criterion = nn.CrossEntropyLoss()
 
 # data_set = []
 # for i in range(number_size):
@@ -53,7 +56,7 @@ for i in range(1,number_size+1): #+1 because we go from 1 to num not 0 to num-1
     one_hot_array = [0] * number_size
     one_hot_array[i-1] = 1 #-1 because the indices start at 0
     data_set += [one_hot_array]*copies_per_num
-    target_set += [i-1]*copies_per_num #the target is the index too !!
+    target_set += [one_hot_array]*copies_per_num
 #end for
 
 temp_data = zip(data_set,target_set)
@@ -64,7 +67,7 @@ unzippd_data = list(unzippd_data)
 data_set = unzippd_data[0]
 target_set = unzippd_data[1]
 
-target_set = torch.tensor(target_set, dtype = torch.long)
+target_set = torch.tensor(target_set, dtype = torch.float)
 # NEED TO PUT INDICES in the target set if using cross entropy loss
 
 data_set = torch.tensor(data_set, dtype = torch.float)
@@ -160,7 +163,7 @@ except:
 
 
 ae_nn.to(device)
-optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01, momentum= 0.5)
+optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01)#, momentum= 0.5)
 
 ae_nn.train()
 for i in range(num_epochs):
@@ -170,7 +173,7 @@ for i in range(num_epochs):
         input,target = data_set[d:d+1,:],target_set[d:d+1]
         input,target = input.to(device),target.to(device)
         output = ae_nn(input)
-        loss = criterion(output,target)
+        loss = 1-F.cosine_similarity(output,target)
         cumul_loss += loss.data
         loss.backward()
         optimizer.step()

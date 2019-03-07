@@ -24,7 +24,7 @@ from random import shuffle
 # a long list of numbers which are then converted to one hot encoding or binary encoding.
 
 num_epochs = 100
-number_size = 1000
+number_size = 8
 DISPLAY_METRIC_INTERVAL = number_size/10
 BATCH_SIZE = 10
 MODEL_PATH = "ae_nn.p"
@@ -120,16 +120,14 @@ for i in range(num_epochs):
         input,target = data_set[d:d+1,:],target_set[d:d+1]
         input,target = input.to(device),target.to(device)
         output = ae_nn(input)
-        loss = criterion(output,target)
-        cumul_loss += loss.data
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
+        loss1 = criterion(output,target)
 
         encoding = ae_nn.get_encoding(input)
-        loss = encoding - torch.ones_like(encoding)
-        loss = 2**loss
-        loss = torch.sum(loss)
+        loss2 = encoding - torch.ones_like(encoding)
+        loss2 = 2**loss2
+        loss2 = torch.sum(loss2)
+
+        loss = loss1 + loss2
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
@@ -140,8 +138,8 @@ for i in range(num_epochs):
         #     optimizer.zero_grad()
         if d%DISPLAY_METRIC_INTERVAL == 0:
             print("at d =",d)
-            print("avg loss %f",cumul_loss/DISPLAY_METRIC_INTERVAL)
-            cumul_loss = 0.0
+            # print("avg loss %f",cumul_loss/DISPLAY_METRIC_INTERVAL)
+            print("curr loss %f",loss)
     #end inner for
 #end outer for
 
