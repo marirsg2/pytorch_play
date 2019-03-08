@@ -72,36 +72,109 @@ class Trivial_AE(nn.Module):
         return curr_output
 #---end nn class
 
+
+
+
 device = torch.device("cuda" if use_cuda else "cpu")
 ae_nn = Trivial_AE()
-ae_nn.to(device)
-optimizer = optim.SGD(ae_nn.parameters(), lr = 0.01)#, momentum=0.9)
-ae_nn.train()
-for i in range(num_epochs):
-    print("At epoch =", i)
-    cumul_loss = 0.0
-    for d in range(data_set.shape[0]):
-        input,target = data_set[d:d+1,:],target_set[d:d+1]
-        # input,target = input.to(device),target.to(device)
-        output = ae_nn(input)
-        loss = criterion(output,target)
-        cumul_loss += loss.data
-        loss.backward()
-        if d%BATCH_SIZE == 0:
-            optimizer.step()
-            optimizer.zero_grad()
-        if d%DISPLAY_METRIC_INTERVAL == 0 and d!= 0:
-            print("at d =",d)
-            print("avg loss %f",cumul_loss/DISPLAY_METRIC_INTERVAL)
-            # print("curr loss %f",loss)
-            cumul_loss = 0.0
-    #end inner for
-#end outer for
+
+
+try:
+    print("Model was loaded")
+    # pass
+    ae_nn.load_state_dict(torch.load(MODEL_PATH))
+except:
+    print("Model was not loaded")
+    pass
+
+
+
+# ae_nn.to(device)
+# optimizer = optim.SGD(ae_nn.parameters(), lr = 0.003)#, momentum=0.9)
+# ae_nn.train()
+# for i in range(num_epochs):
+#     print("At epoch =", i)
+#     cumul_loss = 0.0
+#     optimizer.zero_grad()
+#     for d in range(data_set.shape[0]):
+#         input,target = data_set[d:d+1,:],target_set[d:d+1]
+#         # input,target = input.to(device),target.to(device)
+#         output = ae_nn(input)
+#         loss = criterion(output,target)
+#         cumul_loss += loss.data
+#         loss.backward()
+#         if d%BATCH_SIZE == 0:
+#             optimizer.step()
+#             optimizer.zero_grad()
+#         if d%DISPLAY_METRIC_INTERVAL == 0 and d!= 0:
+#             print("at d =",d)
+#             print("avg loss %f",cumul_loss/DISPLAY_METRIC_INTERVAL)
+#             # print("curr loss %f",loss)
+#             cumul_loss = 0.0
+#     #end inner for
+# #end outer for
 
 #test it out
 ae_nn.eval()
+
+prediction_array = np.zeros(max_number)
+prediction_array[0] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
 prediction_array = np.zeros(max_number)
 prediction_array[1] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[2] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[3] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[4] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[5] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[6] = 1
+prediction_array = torch.tensor([prediction_array],dtype = torch.float)
+output = ae_nn.forward(prediction_array)
+print(prediction_array)
+print(output)
+print("=========================================================")
+
+prediction_array = np.zeros(max_number)
+prediction_array[7] = 1
 prediction_array = torch.tensor([prediction_array],dtype = torch.float)
 output = ae_nn.forward(prediction_array)
 print(prediction_array)
