@@ -43,7 +43,7 @@ for i in range(1,number_size+1): #+1 because we go from 1 to num not 0 to num-1
     one_hot_array = [0] * number_size
     one_hot_array[i-1] = 1 #-1 because the indices start at 0
     data_set += [one_hot_array]*copies_per_num
-    target_set += [i-1]*copies_per_num #the target is the index too !!
+    target_set += [i-1]*copies_per_num #the target is the index too!! one hot encoding starting from 1 at index 0
 #end for
 #---shuffle and put data into tensor
 temp_data = zip(data_set,target_set)
@@ -88,7 +88,7 @@ except:
     pass
 
 
-
+#
 # ae_nn.to(device)
 # optimizer = optim.SGD(ae_nn.parameters(), lr = 0.003)#, momentum=0.9)
 # ae_nn.train()
